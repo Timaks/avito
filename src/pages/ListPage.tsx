@@ -12,31 +12,41 @@ interface ListPageTypes {
 
 function ListPage() {
   const [items, setItems] = useState<ListPageTypes[]>([])
-  const [error, setError] = useState(null) // state для ошибки (необязательно)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    axios
-      .get<ListPageTypes[]>('http://localhost:3000/items')
-      .then((response) => {
-        const data = response.data
-        console.log(data)
-        setItems(data) // сохраняем объявления в state
-      })
-      .catch((error) => {
+    const fetchItems = async () => {
+      try {
+        const response = await axios.get<ListPageTypes[]>(
+          'http://localhost:3000/items'
+        )
+        setItems(response.data) // сохраняем объявления в state
+      } catch (error) {
         console.error('Error fetching items:', error)
-        setError(error.message) // сохраняем текст ошибки (необязательно)
-      })
+        setError('Не удалось загрузить объявления. Попробуйте позже.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchItems()
   }, [])
 
   return (
     <div>
       <h1>Список объявлений</h1>
+      <Link to='/form'>
+        <button>Разместить объявление</button>
+      </Link>
+      {/* Если в процессе загрузки - покажем загрузочный индикатор */}
+      {loading && <p>Загрузка...</p>}
 
       {/* Если ошибка — выведем её */}
-      {error && <p style={{ color: 'red' }}>Ошибка: {error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {/* Если объявлений нет, напишем, что пока ничего нет */}
-      {items.length === 0 && !error && <p>Пока нет объявлений.</p>}
+      {items.length === 0 && !loading && <p>Пока нет объявлений.</p>}
 
       <ul>
         {/* Перебираем массив объявлений и рендерим списком */}
