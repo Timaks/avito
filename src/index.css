@@ -15,7 +15,7 @@ ul {
 }
 /* Основной контейнер для страниц */
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 20px auto;
   background: #fff;
   padding: 20px;
@@ -191,32 +191,4 @@ input[type='submit']:hover {
     display: block;
     margin-bottom: 10px;
   }
-}
-
-/* Стили для пагинации */
-.pagination {
-  display: flex;
-  justify-content: center;
-  list-style: none;
-  padding: 0;
-  margin-top: 20px;
-}
-
-.pagination .page-item {
-  margin: 0 5px;
-}
-
-.pagination .page-link {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  color: #00a2ff;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.pagination .active .page-link {
-  background-color: #00a2ff;
-  color: #fff;
-  border-color: #00a2ff;
 }

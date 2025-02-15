@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import ReactPaginate from 'react-paginate'
+import Pagination from '../components/Pagination/Pagination'
+import Filters from '../components/Filters/Filters'
 import { ListPageTypes } from '../App'
 
 interface ListPageProps {
@@ -13,10 +14,138 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
   const itemsPerPage = 5
   const [currentPage, setCurrentPage] = useState(0)
 
-  // Вычисляем срез текущих элементов
+  // Состояния фильтров
+  const [selectedCategory, setSelectedCategory] = useState('')
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState('')
+  const [minAreaFilter, setMinAreaFilter] = useState('')
+  const [minRoomsFilter, setMinRoomsFilter] = useState('')
+  const [maxPriceFilter, setMaxPriceFilter] = useState('')
+  const [brandFilter, setBrandFilter] = useState('')
+  const [modelFilter, setModelFilter] = useState('')
+  const [minYearFilter, setMinYearFilter] = useState('')
+  const [maxMileageFilter, setMaxMileageFilter] = useState('')
+  const [serviceTypeFilter, setServiceTypeFilter] = useState('')
+  const [minCostFilter, setMinCostFilter] = useState('')
+
+  // Сбрасываем текущую страницу при изменении фильтров
+  useEffect(() => {
+    setCurrentPage(0)
+  }, [
+    selectedCategory,
+    propertyTypeFilter,
+    minAreaFilter,
+    minRoomsFilter,
+    maxPriceFilter,
+    brandFilter,
+    modelFilter,
+    minYearFilter,
+    maxMileageFilter,
+    serviceTypeFilter,
+    minCostFilter,
+  ])
+
+  // Фильтрация элементов
+  const filteredItems = items.filter((item) => {
+    let match = true
+
+    // Фильтр по категории
+    if (selectedCategory && item.type !== selectedCategory) {
+      match = false
+    }
+
+    // Дополнительные фильтры для "Недвижимость"
+    if (selectedCategory === 'Недвижимость') {
+      if (
+        propertyTypeFilter &&
+        (!item.propertyType ||
+          item.propertyType
+            .toLowerCase()
+            .indexOf(propertyTypeFilter.toLowerCase()) === -1)
+      ) {
+        match = false
+      }
+      if (
+        minAreaFilter &&
+        item.area !== undefined &&
+        item.area < parseFloat(minAreaFilter)
+      ) {
+        match = false
+      }
+      if (
+        minRoomsFilter &&
+        item.rooms !== undefined &&
+        item.rooms < parseInt(minRoomsFilter)
+      ) {
+        match = false
+      }
+      if (
+        maxPriceFilter &&
+        item.price !== undefined &&
+        item.price > parseFloat(maxPriceFilter)
+      ) {
+        match = false
+      }
+    }
+
+    // Дополнительные фильтры для "Авто"
+    if (selectedCategory === 'Авто') {
+      if (
+        brandFilter &&
+        (!item.brand ||
+          item.brand.toLowerCase().indexOf(brandFilter.toLowerCase()) === -1)
+      ) {
+        match = false
+      }
+      if (
+        modelFilter &&
+        (!item.model ||
+          item.model.toLowerCase().indexOf(modelFilter.toLowerCase()) === -1)
+      ) {
+        match = false
+      }
+      if (
+        minYearFilter &&
+        item.year !== undefined &&
+        item.year < parseInt(minYearFilter)
+      ) {
+        match = false
+      }
+      if (
+        maxMileageFilter &&
+        item.mileage !== undefined &&
+        item.mileage > parseInt(maxMileageFilter)
+      ) {
+        match = false
+      }
+    }
+
+    // Дополнительные фильтры для "Услуги"
+    if (selectedCategory === 'Услуги') {
+      if (
+        serviceTypeFilter &&
+        (!item.serviceType ||
+          item.serviceType
+            .toLowerCase()
+            .indexOf(serviceTypeFilter.toLowerCase()) === -1)
+      ) {
+        match = false
+      }
+      if (
+        minCostFilter &&
+        item.cost !== undefined &&
+        item.cost < parseFloat(minCostFilter)
+      ) {
+        match = false
+      }
+    }
+
+    return match
+  })
+
+  // Пагинация после фильтрации
   const offset = currentPage * itemsPerPage
-  const currentItems = items.slice(offset, offset + itemsPerPage)
-  const pageCount = Math.ceil(items.length / itemsPerPage)
+  const currentItems = filteredItems.slice(offset, offset + itemsPerPage)
+  const pageCount = Math.ceil(filteredItems.length / itemsPerPage)
 
   const handlePageClick = (selectedItem: { selected: number }) => {
     setCurrentPage(selectedItem.selected)
@@ -31,9 +160,37 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         </Link>
       </div>
 
+      {/* Компонент фильтров */}
+      <Filters
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        propertyTypeFilter={propertyTypeFilter}
+        setPropertyTypeFilter={setPropertyTypeFilter}
+        minAreaFilter={minAreaFilter}
+        setMinAreaFilter={setMinAreaFilter}
+        minRoomsFilter={minRoomsFilter}
+        setMinRoomsFilter={setMinRoomsFilter}
+        maxPriceFilter={maxPriceFilter}
+        setMaxPriceFilter={setMaxPriceFilter}
+        brandFilter={brandFilter}
+        setBrandFilter={setBrandFilter}
+        modelFilter={modelFilter}
+        setModelFilter={setModelFilter}
+        minYearFilter={minYearFilter}
+        setMinYearFilter={setMinYearFilter}
+        maxMileageFilter={maxMileageFilter}
+        setMaxMileageFilter={setMaxMileageFilter}
+        serviceTypeFilter={serviceTypeFilter}
+        setServiceTypeFilter={setServiceTypeFilter}
+        minCostFilter={minCostFilter}
+        setMinCostFilter={setMinCostFilter}
+      />
+
       {loading && <p>Загрузка...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      {items.length === 0 && !loading && !error && <p>Пока нет объявлений.</p>}
+      {filteredItems.length === 0 && !loading && !error && (
+        <p>Пока нет объявлений.</p>
+      )}
 
       <ul>
         {currentItems.map((item) => (
@@ -61,26 +218,8 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         ))}
       </ul>
 
-      {items.length > itemsPerPage && (
-        <ReactPaginate
-          previousLabel={'«'}
-          nextLabel={'»'}
-          breakLabel={'...'}
-          pageCount={pageCount}
-          marginPagesDisplayed={2}
-          pageRangeDisplayed={3}
-          onPageChange={handlePageClick}
-          containerClassName={'pagination'}
-          activeClassName={'active'}
-          pageClassName={'page-item'}
-          pageLinkClassName={'page-link'}
-          previousClassName={'page-item'}
-          previousLinkClassName={'page-link'}
-          nextClassName={'page-item'}
-          nextLinkClassName={'page-link'}
-          breakClassName={'page-item'}
-          breakLinkClassName={'page-link'}
-        />
+      {filteredItems.length > itemsPerPage && (
+        <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
       )}
     </div>
   )
