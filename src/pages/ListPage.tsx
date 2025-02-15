@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import ReactPaginate from 'react-paginate'
 import { ListPageTypes } from '../App'
 
 interface ListPageProps {
@@ -9,6 +10,18 @@ interface ListPageProps {
 }
 
 const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
+  const itemsPerPage = 5
+  const [currentPage, setCurrentPage] = useState(0)
+
+  // Вычисляем срез текущих элементов
+  const offset = currentPage * itemsPerPage
+  const currentItems = items.slice(offset, offset + itemsPerPage)
+  const pageCount = Math.ceil(items.length / itemsPerPage)
+
+  const handlePageClick = (selectedItem: { selected: number }) => {
+    setCurrentPage(selectedItem.selected)
+  }
+
   return (
     <div className='container'>
       <div className='header'>
@@ -23,7 +36,7 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
       {items.length === 0 && !loading && !error && <p>Пока нет объявлений.</p>}
 
       <ul>
-        {items.map((item) => (
+        {currentItems.map((item) => (
           <li key={item.id} className='list-item'>
             <div className='item-preview'>
               <img
@@ -47,6 +60,28 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
           </li>
         ))}
       </ul>
+
+      {items.length > itemsPerPage && (
+        <ReactPaginate
+          previousLabel={'«'}
+          nextLabel={'»'}
+          breakLabel={'...'}
+          pageCount={pageCount}
+          marginPagesDisplayed={2}
+          pageRangeDisplayed={3}
+          onPageChange={handlePageClick}
+          containerClassName={'pagination'}
+          activeClassName={'active'}
+          pageClassName={'page-item'}
+          pageLinkClassName={'page-link'}
+          previousClassName={'page-item'}
+          previousLinkClassName={'page-link'}
+          nextClassName={'page-item'}
+          nextLinkClassName={'page-link'}
+          breakClassName={'page-item'}
+          breakLinkClassName={'page-link'}
+        />
+      )}
     </div>
   )
 }
