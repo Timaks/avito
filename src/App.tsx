@@ -15,6 +15,21 @@ export interface ListPageTypes {
   description: string
   location: string
   type: 'Недвижимость' | 'Авто' | 'Услуги'
+  image?: string
+  // поля для недвижимости
+  propertyType?: string
+  area?: number
+  rooms?: number
+  price?: number
+  // поля для авто
+  brand?: string
+  model?: string
+  year?: number
+  mileage?: number
+  // поля для услуг
+  serviceType?: string
+  experience?: string
+  cost?: number
 }
 
 function App() {
