@@ -27,79 +27,87 @@ interface FormPageProps {
   updateItem?: (updatedItem: ListPageTypes) => void
 }
 
+const DRAFT_KEY = 'draftFormData'
+
 const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
-   // Если в URL есть параметр id, значит мы редактируем существующее объявление
+  // Если в URL есть параметр id, значит мы редактируем существующее объявление
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
 
-  const [formData, setFormData] = useState<FeedbackFormData>({
+  const defaultState: FeedbackFormData = {
     name: '',
     description: '',
     location: '',
     type: '',
     image: '',
+    propertyType: '',
+    area: 0,
+    rooms: 0,
+    price: 0,
+    brand: '',
+    model: '',
+    year: 0,
+    mileage: 0,
+    serviceType: '',
+    experience: '',
+    cost: 0,
+  }
+
+  // Ленивая инициализация: если новое объявление и есть сохранённый черновик, используем его
+  const [formData, setFormData] = useState<FeedbackFormData>(() => {
+    if (!id) {
+      const savedData = localStorage.getItem(DRAFT_KEY)
+      return savedData ? JSON.parse(savedData) : defaultState
+    }
+    return defaultState
   })
   const [error, setError] = useState<string | null>(null)
 
-  // Если редактирование – подтягиваем данные объявления с сервера
+  // Если редактирование – загружаем данные с сервера
   useEffect(() => {
     if (id) {
       axios
         .get<ListPageTypes>(`http://localhost:3000/items/${id}`)
         .then((response) => {
           const item = response.data
-          // Преобразуем серверный тип в формат для формы:
-          // 'Недвижимость' -> 'realty', 'Авто' -> 'auto', 'Услуги' -> 'services'
-          let formType: '' | 'realty' | 'auto' | 'services' = ''
-          switch (item.type) {
-            case 'Недвижимость':
-              formType = 'realty'
-              break
-            case 'Авто':
-              formType = 'auto'
-              break
-            case 'Услуги':
-              formType = 'services'
-              break
-            default:
-              formType = ''
-          }
+          const formType: '' | 'realty' | 'auto' | 'services' =
+            item.type === 'Недвижимость'
+              ? 'realty'
+              : item.type === 'Авто'
+              ? 'auto'
+              : item.type === 'Услуги'
+              ? 'services'
+              : ''
           setFormData({
             name: item.name,
             description: item.description,
             location: item.location,
             type: formType,
             image: item.image || '',
-            propertyType: item.propertyType,
-            area: item.area,
-            rooms: item.rooms,
-            price: item.price,
-            brand: item.brand,
-            model: item.model,
-            year: item.year,
-            mileage: item.mileage,
-            serviceType: item.serviceType,
-            experience: item.experience,
-            cost: item.cost,
+            propertyType: item.propertyType || '',
+            area: item.area || 0,
+            rooms: item.rooms || 0,
+            price: item.price || 0,
+            brand: item.brand || '',
+            model: item.model || '',
+            year: item.year || 0,
+            mileage: item.mileage || 0,
+            serviceType: item.serviceType || '',
+            experience: item.experience || '',
+            cost: item.cost || 0,
           })
         })
         .catch((err) => {
           console.error(err)
           setError('Не удалось загрузить данные объявления для редактирования.')
         })
-    } else {
-      // Если создаём новое объявление, можно загрузить данные из localStorage (если есть)
-      const savedData = localStorage.getItem('draftFormData')
-      if (savedData) {
-        setFormData(JSON.parse(savedData))
-      }
     }
   }, [id])
 
   // Сохраняем данные в localStorage только для нового объявления
   useEffect(() => {
     if (!id) {
-      localStorage.setItem('draftFormData', JSON.stringify(formData))
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(formData))
     }
   }, [formData, id])
 
@@ -109,35 +117,33 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
     >
   ) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleNumberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value ? Number(value) : 0,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value ? Number(value) : 0 }))
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files && files.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        image: files[0].name,
-      }))
+      setFormData((prev) => ({ ...prev, image: files[0].name }))
+    }
+  }
+
+  const clearForm = () => {
+    setFormData(defaultState)
+    if (!id) {
+      localStorage.removeItem(DRAFT_KEY)
     }
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // Преобразуем значение type в формат, который ожидает сервер
-    let serverType: 'Недвижимость' | 'Авто' | 'Услуги' = 'Недвижимость'
+    // Преобразуем тип для сервера
+    let serverType: 'Недвижимость' | 'Авто' | 'Услуги'
     switch (formData.type) {
       case 'realty':
         serverType = 'Недвижимость'
@@ -158,7 +164,6 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
       setError('Не все обязательные поля заполнены.')
       return
     }
-
     // Дополнительные проверки для каждой категории
     if (
       serverType === 'Недвижимость' &&
@@ -199,9 +204,7 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
           dataToSubmit
         )
         // Если функция updateItem передана, обновляем глобальное состояние
-        if (updateItem) {
-          updateItem(response.data)
-        }
+        if (updateItem) updateItem(response.data)
         // Переходим на страницу просмотра объявления
         navigate(`/item/${id}`)
       } else {
@@ -211,12 +214,12 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
           dataToSubmit
         )
         addItem(response.data)
-        localStorage.removeItem('draftFormData')
+        localStorage.removeItem(DRAFT_KEY)
         navigate('/')
       }
     } catch (error) {
       console.error('Ошибка:', error)
-      if (error instanceof AxiosError) {
+      if (axios.isAxiosError(error)) {
         if (error.response) {
           setError(
             `Ошибка загрузки: ${error.response.status} - ${error.response.statusText}`
@@ -244,15 +247,15 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
             required
             type='text'
             name='name'
-            onChange={handleInputChange}
             value={formData.name}
+            onChange={handleInputChange}
           />
         </div>
         <div className='form-group'>
           <label>Описание:</label>
           <textarea
-            name='description'
             required
+            name='description'
             value={formData.description}
             onChange={handleInputChange}
           />
@@ -263,8 +266,8 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
             required
             type='text'
             name='location'
-            onChange={handleInputChange}
             value={formData.location}
+            onChange={handleInputChange}
           />
         </div>
         <div className='form-group'>
@@ -407,7 +410,14 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
           />
         </div>
 
-        <button type='submit'>Сохранить</button>
+        <div className='form-buttons'>
+          <button type='submit' className='button'>
+            Сохранить
+          </button>
+          <button type='button' onClick={clearForm} className='button'>
+            Очистить данные
+          </button>
+        </div>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>

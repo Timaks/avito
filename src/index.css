@@ -96,6 +96,12 @@ input[type='submit']:hover {
   background-color: #008acf;
 }
 
+.form-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  gap: 10px;
+}
 /* Стили для превью объявления */
 .item-preview {
   display: flex;
