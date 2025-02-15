@@ -27,6 +27,9 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
   const [serviceTypeFilter, setServiceTypeFilter] = useState('')
   const [minCostFilter, setMinCostFilter] = useState('')
 
+  // Состояние поиска по названию
+  const [searchQuery, setSearchQuery] = useState('')
+
   // Функция сброса фильтров
   const clearFilters = () => {
     setSelectedCategory('')
@@ -42,7 +45,7 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
     setMinCostFilter('')
   }
 
-  // Сбрасываем текущую страницу при изменении фильтров
+  // Сбрасываем текущую страницу при изменении фильтров или поискового запроса
   useEffect(() => {
     setCurrentPage(0)
   }, [
@@ -57,14 +60,25 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
     maxMileageFilter,
     serviceTypeFilter,
     minCostFilter,
+    searchQuery,
   ])
 
   // Фильтрация элементов
   const filteredItems = items.filter((item) => {
     let match = true
+
+    // Поиск по названию
+    if (
+      searchQuery &&
+      item.name.toLowerCase().indexOf(searchQuery.toLowerCase()) === -1
+    ) {
+      match = false
+    }
+
     if (selectedCategory && item.type !== selectedCategory) {
       match = false
     }
+
     if (selectedCategory === 'Недвижимость') {
       if (
         propertyTypeFilter &&
@@ -97,6 +111,7 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         match = false
       }
     }
+
     if (selectedCategory === 'Авто') {
       if (
         brandFilter &&
@@ -127,6 +142,7 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         match = false
       }
     }
+
     if (selectedCategory === 'Услуги') {
       if (
         serviceTypeFilter &&
@@ -145,6 +161,7 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         match = false
       }
     }
+
     return match
   })
 
@@ -195,6 +212,15 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
           />
         </div>
         <div className='list-container'>
+          {/* Поле поиска по названию */}
+          <div className='search-bar'>
+            <input
+              type='text'
+              placeholder='Поиск по названию'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           {loading && <p>Загрузка...</p>}
           {error && <p style={{ color: 'red' }}>{error}</p>}
           {filteredItems.length === 0 && !loading && !error && (
