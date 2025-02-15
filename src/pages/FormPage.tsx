@@ -168,11 +168,11 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
   }
 
   return (
-    <div>
+    <div className='container'>
       <h1>Форма для объявления</h1>
       <form onSubmit={handleSubmit}>
-        <label>
-          Название:
+        <div className='form-group'>
+          <label>Название:</label>
           <input
             required
             type='text'
@@ -180,18 +180,18 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
             onChange={handleInputChange}
             value={formData.name}
           />
-        </label>
-        <label>
-          Описание:
+        </div>
+        <div className='form-group'>
+          <label>Описание:</label>
           <textarea
             name='description'
             required
             value={formData.description}
             onChange={handleInputChange}
           />
-        </label>
-        <label>
-          Локация:
+        </div>
+        <div className='form-group'>
+          <label>Локация:</label>
           <input
             required
             type='text'
@@ -199,136 +199,147 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
             onChange={handleInputChange}
             value={formData.location}
           />
-        </label>
-        <select
-          required
-          name='type'
-          value={formData.type}
-          onChange={handleInputChange}
-        >
-          <option value=''>Выберите категорию</option>
-          <option value='realty'>Недвижимость</option>
-          <option value='auto'>Авто</option>
-          <option value='services'>Услуги</option>
-        </select>
+        </div>
+        <div className='form-group'>
+          <label>Категория:</label>
+          <select
+            required
+            name='type'
+            value={formData.type}
+            onChange={handleInputChange}
+          >
+            <option value=''>Выберите категорию</option>
+            <option value='realty'>Недвижимость</option>
+            <option value='auto'>Авто</option>
+            <option value='services'>Услуги</option>
+          </select>
+        </div>
+
         {formData.type === 'realty' && (
           <div>
-            <label>
-              Тип недвижимости:
+            <div className='form-group'>
+              <label>Тип недвижимости:</label>
               <input
                 type='text'
                 name='propertyType'
                 value={formData.propertyType || ''}
                 onChange={handleInputChange}
               />
-            </label>
-            <label>
-              Площадь:
+            </div>
+            <div className='form-group'>
+              <label>Площадь:</label>
               <input
                 type='number'
                 name='area'
                 value={formData.area || 0}
                 onChange={handleNumberInputChange}
               />
-            </label>
-            <label>
-              Комнаты:
+            </div>
+            <div className='form-group'>
+              <label>Комнаты:</label>
               <input
                 type='number'
                 name='rooms'
                 value={formData.rooms || 0}
                 onChange={handleNumberInputChange}
               />
-            </label>
-            <label>
-              Цена:
+            </div>
+            <div className='form-group'>
+              <label>Цена:</label>
               <input
                 type='number'
                 name='price'
                 value={formData.price || 0}
                 onChange={handleNumberInputChange}
               />
-            </label>
+            </div>
           </div>
         )}
+
         {formData.type === 'auto' && (
           <div>
-            <label>
-              Марка:
+            <div className='form-group'>
+              <label>Марка:</label>
               <input
                 type='text'
                 name='brand'
                 value={formData.brand || ''}
                 onChange={handleInputChange}
               />
-            </label>
-            <label>
-              Модель:
+            </div>
+            <div className='form-group'>
+              <label>Модель:</label>
               <input
                 type='text'
                 name='model'
                 value={formData.model || ''}
                 onChange={handleInputChange}
               />
-            </label>
-            <label>
-              Год:
+            </div>
+            <div className='form-group'>
+              <label>Год:</label>
               <input
                 type='number'
                 name='year'
                 value={formData.year || 0}
                 onChange={handleNumberInputChange}
               />
-            </label>
-            <label>
-              Пробег:
+            </div>
+            <div className='form-group'>
+              <label>Пробег:</label>
               <input
                 type='number'
                 name='mileage'
                 value={formData.mileage || 0}
                 onChange={handleNumberInputChange}
               />
-            </label>
+            </div>
           </div>
         )}
+
         {formData.type === 'services' && (
           <div>
-            <label>
-              Тип услуги:
+            <div className='form-group'>
+              <label>Тип услуги:</label>
               <input
                 type='text'
                 name='serviceType'
                 value={formData.serviceType || ''}
                 onChange={handleInputChange}
               />
-            </label>
-            <label>
-              Опыт:
+            </div>
+            <div className='form-group'>
+              <label>Опыт:</label>
               <input
                 type='text'
                 name='experience'
                 value={formData.experience || ''}
                 onChange={handleInputChange}
               />
-            </label>
-            <label>
-              Стоимость:
+            </div>
+            <div className='form-group'>
+              <label>Стоимость:</label>
               <input
                 type='number'
                 name='cost'
                 value={formData.cost || 0}
                 onChange={handleNumberInputChange}
               />
-            </label>
+            </div>
           </div>
         )}
-        <input
-          type='file'
-          className='custom-file-input'
-          multiple
-          accept='image/*, .pdf, .doc, .docx'
-          onChange={handleFileChange}
-        />
+
+        <div className='form-group'>
+          <label>Изображение:</label>
+          <input
+            type='file'
+            className='custom-file-input'
+            multiple
+            accept='image/*, .pdf, .doc, .docx'
+            onChange={handleFileChange}
+          />
+        </div>
+
         <button type='submit'>Сохранить</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}

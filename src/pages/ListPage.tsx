@@ -10,11 +10,13 @@ interface ListPageProps {
 
 const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
   return (
-    <div>
-      <h1>Список объявлений</h1>
-      <Link to='/form'>
-        <button>Разместить объявление</button>
-      </Link>
+    <div className='container'>
+      <div className='header'>
+        <h1>Список объявлений</h1>
+        <Link to='/form' className='button'>
+          Разместить объявление
+        </Link>
+      </div>
 
       {loading && <p>Загрузка...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -22,7 +24,7 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
 
       <ul>
         {items.map((item) => (
-          <li key={item.id}>
+          <li key={item.id} className='list-item'>
             <p>{item.name}</p>
           </li>
         ))}

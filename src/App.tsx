@@ -6,6 +6,7 @@ import FormPage from './pages/FormPage'
 import ListPage from './pages/ListPage'
 import ItemPage from './pages/ItemPage'
 import NotFound from './pages/NotFound'
+import './index.css'
 
 // Интерфейс, соответствующий данным, возвращаемым сервером
 export interface ListPageTypes {
