@@ -4,7 +4,7 @@ import axios, { AxiosError } from 'axios'
 
 import FormPage from './pages/FormPage'
 import ListPage from './pages/ListPage'
-import ItemPage from './pages/ItemPage'
+import ItemPage from './pages/ItemPage' // Импортируем компонент для отдельного объявления
 import NotFound from './pages/NotFound'
 import './index.css'
 
@@ -80,8 +80,10 @@ function App() {
           path='/'
           element={<ListPage items={items} loading={loading} error={error} />}
         />
+        <Route path='/form/:id' element={<FormPage addItem={addItem} />} />
         <Route path='/form' element={<FormPage addItem={addItem} />} />
-        <Route path='/item/:id' element={<ItemPage />} />
+        <Route path='/item/:id' element={<ItemPage />} />{' '}
+        {/* Добавили маршрут для отдельного объявления */}
         <Route path='*' element={<NotFound />} />
       </Routes>
     </BrowserRouter>

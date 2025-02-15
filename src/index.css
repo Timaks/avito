@@ -124,3 +124,71 @@ input[type='submit']:hover {
 .list-item {
   list-style: none;
 }
+
+/* Двухколоночный макет для объявления */
+.item-page {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Левая колонка — фото */
+.item-photo {
+  flex: 1 1 300px;
+  max-width: 300px;
+}
+
+.item-photo img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Правая колонка — детали объявления */
+.item-details {
+  flex: 2 1 300px;
+}
+
+/* Стили для параграфов */
+.item-details p {
+  margin: 0 0 10px;
+}
+
+/* Стили для блока кнопок */
+.item-buttons {
+  margin-top: 20px;
+}
+
+.item-buttons .button {
+  margin-right: 10px;
+  text-decoration: none;
+  background-color: #00a2ff;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 4px;
+}
+
+.item-buttons .button:hover {
+  background-color: #008acf;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .item-page {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .item-photo,
+  .item-details {
+    max-width: 100%;
+    flex: none;
+  }
+
+  .item-buttons .button {
+    display: block;
+    margin-bottom: 10px;
+  }
+}

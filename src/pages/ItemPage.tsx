@@ -55,98 +55,88 @@ function ItemPage() {
   return (
     <div className='container'>
       <h1>{item.name}</h1>
-      <img
-        src={
-          item.image
-            ? item.image
-            : 'https://azaliadecor.ru/upload/iblock/5c7/pya5k5qetqhcd2lm4finiaulj4hjv7pq.jpg'
-        }
-        alt={item.name}
-        style={{
-          width: '300px',
-          height: '300px',
-          objectFit: 'cover',
-          marginBottom: '15px',
-        }}
-      />
-      <p>
-        <strong>ID:</strong> {item.id}
-      </p>
-      <p>
-        <strong>Описание:</strong> {item.description}
-      </p>
-      <p>
-        <strong>Локация:</strong> {item.location}
-      </p>
-      <p>
-        <strong>Категория:</strong> {item.type}
-      </p>
+      <div className='item-page'>
+        <div className='item-photo'>
+          <img
+            src={
+              item.image
+                ? item.image
+                : 'https://azaliadecor.ru/upload/iblock/5c7/pya5k5qetqhcd2lm4finiaulj4hjv7pq.jpg'
+            }
+            alt={item.name}
+          />
+        </div>
+        <div className='item-details'>
+          <p>
+            <strong>ID:</strong> {item.id}
+          </p>
+          <p>
+            <strong>Описание:</strong> {item.description}
+          </p>
+          <p>
+            <strong>Локация:</strong> {item.location}
+          </p>
+          <p>
+            <strong>Категория:</strong> {item.type}
+          </p>
 
-      {item.type === 'Недвижимость' && (
-        <>
-          <p>
-            <strong>Тип недвижимости:</strong> {item.propertyType}
-          </p>
-          <p>
-            <strong>Площадь:</strong> {item.area} кв.м
-          </p>
-          <p>
-            <strong>Комнаты:</strong> {item.rooms}
-          </p>
-          <p>
-            <strong>Цена:</strong> {item.price} руб.
-          </p>
-        </>
-      )}
+          {item.type === 'Недвижимость' && (
+            <>
+              <p>
+                <strong>Тип недвижимости:</strong> {item.propertyType}
+              </p>
+              <p>
+                <strong>Площадь:</strong> {item.area} кв.м
+              </p>
+              <p>
+                <strong>Комнаты:</strong> {item.rooms}
+              </p>
+              <p>
+                <strong>Цена:</strong> {item.price} руб.
+              </p>
+            </>
+          )}
 
-      {item.type === 'Авто' && (
-        <>
-          <p>
-            <strong>Марка:</strong> {item.brand}
-          </p>
-          <p>
-            <strong>Модель:</strong> {item.model}
-          </p>
-          <p>
-            <strong>Год:</strong> {item.year}
-          </p>
-          <p>
-            <strong>Пробег:</strong> {item.mileage} км
-          </p>
-        </>
-      )}
+          {item.type === 'Авто' && (
+            <>
+              <p>
+                <strong>Марка:</strong> {item.brand}
+              </p>
+              <p>
+                <strong>Модель:</strong> {item.model}
+              </p>
+              <p>
+                <strong>Год:</strong> {item.year}
+              </p>
+              <p>
+                <strong>Пробег:</strong> {item.mileage} км
+              </p>
+            </>
+          )}
 
-      {item.type === 'Услуги' && (
-        <>
-          <p>
-            <strong>Тип услуги:</strong> {item.serviceType}
-          </p>
-          <p>
-            <strong>Опыт:</strong> {item.experience}
-          </p>
-          <p>
-            <strong>Стоимость:</strong> {item.cost} руб.
-          </p>
-        </>
-      )}
-      <div></div>
+          {item.type === 'Услуги' && (
+            <>
+              <p>
+                <strong>Тип услуги:</strong> {item.serviceType}
+              </p>
+              <p>
+                <strong>Опыт:</strong> {item.experience}
+              </p>
+              <p>
+                <strong>Стоимость:</strong> {item.cost} руб.
+              </p>
+            </>
+          )}
 
-      <Link
-        to='/form'
-        className='button'
-        style={{ marginTop: '20px', display: 'inline-block' }}
-      >
-        Редактировать
-      </Link>
-
-      <div>
-        <Link
-          to='/'
-          className='button'
-          style={{ marginTop: '20px', display: 'inline-block' }}
-        >
-          Вернуться к списку объявлений
-        </Link>
+          <div className='item-buttons'>
+            <Link to={`/form/${item.id}`} className='button'>
+              Редактировать
+            </Link>
+            <Link to='/' className='button'>
+              Вернуться к списку объявлений
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios, { AxiosError } from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { ListPageTypes } from '../App'
 
 interface FeedbackFormData {
@@ -27,6 +27,10 @@ interface FormPageProps {
 }
 
 const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
+  // Если в URL есть параметр id, значит мы редактируем существующее объявление
+  const { id } = useParams<{ id?: string }>()
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState<FeedbackFormData>({
     name: '',
     description: '',
@@ -35,18 +39,68 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
     image: '',
   })
   const [error, setError] = useState<string | null>(null)
-  const navigate = useNavigate()
 
+  // Если редактирование – подтягиваем данные объявления с сервера
   useEffect(() => {
-    const savedData = localStorage.getItem('draftFormData')
-    if (savedData) {
-      setFormData(JSON.parse(savedData))
+    if (id) {
+      axios
+        .get<ListPageTypes>(`http://localhost:3000/items/${id}`)
+        .then((response) => {
+          const item = response.data
+          // Преобразуем серверный тип в формат формы:
+          // 'Недвижимость' -> 'realty', 'Авто' -> 'auto', 'Услуги' -> 'services'
+          let formType: '' | 'realty' | 'auto' | 'services' = ''
+          switch (item.type) {
+            case 'Недвижимость':
+              formType = 'realty'
+              break
+            case 'Авто':
+              formType = 'auto'
+              break
+            case 'Услуги':
+              formType = 'services'
+              break
+            default:
+              formType = ''
+          }
+          setFormData({
+            name: item.name,
+            description: item.description,
+            location: item.location,
+            type: formType,
+            image: item.image || '',
+            propertyType: item.propertyType,
+            area: item.area,
+            rooms: item.rooms,
+            price: item.price,
+            brand: item.brand,
+            model: item.model,
+            year: item.year,
+            mileage: item.mileage,
+            serviceType: item.serviceType,
+            experience: item.experience,
+            cost: item.cost,
+          })
+        })
+        .catch((err) => {
+          console.error(err)
+          setError('Не удалось загрузить данные объявления для редактирования.')
+        })
+    } else {
+      // Для нового объявления можно использовать localStorage (если нужно)
+      const savedData = localStorage.getItem('draftFormData')
+      if (savedData) {
+        setFormData(JSON.parse(savedData))
+      }
     }
-  }, [])
+  }, [id])
 
+  // Сохраняем в localStorage только для нового объявления
   useEffect(() => {
-    localStorage.setItem('draftFormData', JSON.stringify(formData))
-  }, [formData])
+    if (!id) {
+      localStorage.setItem('draftFormData', JSON.stringify(formData))
+    }
+  }, [formData, id])
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -139,14 +193,21 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
     const dataToSubmit = { ...formData, type: serverType }
 
     try {
-      const response = await axios.post(
-        'http://localhost:3000/items',
-        dataToSubmit
-      )
-      // Сервер возвращает объект ListPageTypes с сгенерированным id
-      addItem(response.data)
-      localStorage.removeItem('draftFormData')
-      navigate('/')
+      if (id) {
+        // Режим редактирования – обновляем существующее объявление
+        await axios.put(`http://localhost:3000/items/${id}`, dataToSubmit)
+        // После обновления можно перейти на страницу просмотра объявления
+        navigate(`/item/${id}`)
+      } else {
+        // Режим создания – добавляем новое объявление
+        const response = await axios.post(
+          'http://localhost:3000/items',
+          dataToSubmit
+        )
+        addItem(response.data)
+        localStorage.removeItem('draftFormData')
+        navigate('/')
+      }
     } catch (error) {
       console.error('Ошибка:', error)
       if (error instanceof AxiosError) {
@@ -169,7 +230,7 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
 
   return (
     <div className='container'>
-      <h1>Форма для объявления</h1>
+      <h1>Форма для объявления {id ? '(Редактирование)' : ''}</h1>
       <form onSubmit={handleSubmit}>
         <div className='form-group'>
           <label>Название:</label>
