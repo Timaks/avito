@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { AxiosError } from 'axios'
+import axios, { AxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { ListPageTypes } from '../App'
 
 interface FeedbackFormData {
   name: string
   description: string
   location: string
-  type: '' | 'realty' | 'auto' | 'services' // Строковые значения, которые будут приходить из формы
+  type: '' | 'realty' | 'auto' | 'services'
   image: string
   propertyType?: string
   area?: number
@@ -22,9 +22,11 @@ interface FeedbackFormData {
   cost?: number
 }
 
-const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
-  addItem,
-}) => {
+interface FormPageProps {
+  addItem: (newItem: ListPageTypes) => void
+}
+
+const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
   const [formData, setFormData] = useState<FeedbackFormData>({
     name: '',
     description: '',
@@ -71,7 +73,7 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
     if (files && files.length > 0) {
       setFormData((prev) => ({
         ...prev,
-        image: files[0].name, // Получаем имя файла
+        image: files[0].name,
       }))
     }
   }
@@ -79,9 +81,8 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    // Преобразуем тип в правильное значение для сервера
-    let serverType: 'Недвижимость' | 'Авто' | 'Услуги' = 'Недвижимость' // значение по умолчанию
-
+    // Преобразуем значение type в формат, который ожидает сервер
+    let serverType: 'Недвижимость' | 'Авто' | 'Услуги' = 'Недвижимость'
     switch (formData.type) {
       case 'realty':
         serverType = 'Недвижимость'
@@ -97,13 +98,13 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
         return
     }
 
-    // Проверяем общие обязательные поля
+    // Проверяем обязательные поля
     if (!formData.name || !formData.description || !formData.location) {
       setError('Не все обязательные поля заполнены.')
       return
     }
 
-    // Проверяем обязательные поля для каждого типа
+    // Дополнительные проверки по типу объявления
     if (
       serverType === 'Недвижимость' &&
       (!formData.propertyType ||
@@ -134,7 +135,7 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
       return
     }
 
-    // Формируем данные для отправки
+    // Формируем данные для отправки на сервер
     const dataToSubmit = { ...formData, type: serverType }
 
     try {
@@ -142,9 +143,10 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
         'http://localhost:3000/items',
         dataToSubmit
       )
-      addItem(response.data) // Добавляем новый элемент в состояние родительского компонента
+      // Сервер возвращает объект ListPageTypes с сгенерированным id
+      addItem(response.data)
       localStorage.removeItem('draftFormData')
-      navigate('/') // Перенаправляем на страницу списка
+      navigate('/')
     } catch (error) {
       console.error('Ошибка:', error)
       if (error instanceof AxiosError) {
@@ -168,14 +170,13 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
   return (
     <div>
       <h1>Форма для объявления</h1>
-
       <form onSubmit={handleSubmit}>
         <label>
           Название:
           <input
             required
-            type="text"
-            name="name"
+            type='text'
+            name='name'
             onChange={handleInputChange}
             value={formData.name}
           />
@@ -183,7 +184,7 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
         <label>
           Описание:
           <textarea
-            name="description"
+            name='description'
             required
             value={formData.description}
             onChange={handleInputChange}
@@ -193,149 +194,143 @@ const FormPage: React.FC<{ addItem: (newItem: FeedbackFormData) => void }> = ({
           Локация:
           <input
             required
-            type="text"
-            name="location"
+            type='text'
+            name='location'
             onChange={handleInputChange}
             value={formData.location}
           />
         </label>
         <select
           required
-          name="type"
+          name='type'
           value={formData.type}
           onChange={handleInputChange}
         >
-          <option value="">Выберите категорию</option>
-          <option value="realty">Недвижимость</option>
-          <option value="auto">Авто</option>
-          <option value="services">Услуги</option>
+          <option value=''>Выберите категорию</option>
+          <option value='realty'>Недвижимость</option>
+          <option value='auto'>Авто</option>
+          <option value='services'>Услуги</option>
         </select>
-
         {formData.type === 'realty' && (
           <div>
             <label>
-              Тип недвижимости:{' '}
+              Тип недвижимости:
               <input
-                type="text"
-                name="propertyType"
+                type='text'
+                name='propertyType'
                 value={formData.propertyType || ''}
                 onChange={handleInputChange}
               />
             </label>
             <label>
-              Площадь:{' '}
+              Площадь:
               <input
-                type="number"
-                name="area"
+                type='number'
+                name='area'
                 value={formData.area || 0}
                 onChange={handleNumberInputChange}
               />
             </label>
             <label>
-              Комнаты:{' '}
+              Комнаты:
               <input
-                type="number"
-                name="rooms"
+                type='number'
+                name='rooms'
                 value={formData.rooms || 0}
                 onChange={handleNumberInputChange}
               />
             </label>
             <label>
-              Цена:{' '}
+              Цена:
               <input
-                type="number"
-                name="price"
+                type='number'
+                name='price'
                 value={formData.price || 0}
                 onChange={handleNumberInputChange}
               />
             </label>
           </div>
         )}
-
         {formData.type === 'auto' && (
           <div>
             <label>
-              Марка:{' '}
+              Марка:
               <input
-                type="text"
-                name="brand"
+                type='text'
+                name='brand'
                 value={formData.brand || ''}
                 onChange={handleInputChange}
               />
             </label>
             <label>
-              Модель:{' '}
+              Модель:
               <input
-                type="text"
-                name="model"
+                type='text'
+                name='model'
                 value={formData.model || ''}
                 onChange={handleInputChange}
               />
             </label>
             <label>
-              Год:{' '}
+              Год:
               <input
-                type="number"
-                name="year"
+                type='number'
+                name='year'
                 value={formData.year || 0}
                 onChange={handleNumberInputChange}
               />
             </label>
             <label>
-              Пробег:{' '}
+              Пробег:
               <input
-                type="number"
-                name="mileage"
+                type='number'
+                name='mileage'
                 value={formData.mileage || 0}
                 onChange={handleNumberInputChange}
               />
             </label>
           </div>
         )}
-
         {formData.type === 'services' && (
           <div>
             <label>
-              Тип услуги:{' '}
+              Тип услуги:
               <input
-                type="text"
-                name="serviceType"
+                type='text'
+                name='serviceType'
                 value={formData.serviceType || ''}
                 onChange={handleInputChange}
               />
             </label>
             <label>
-              Опыт:{' '}
+              Опыт:
               <input
-                type="text"
-                name="experience"
+                type='text'
+                name='experience'
                 value={formData.experience || ''}
                 onChange={handleInputChange}
               />
             </label>
             <label>
-              Стоимость:{' '}
+              Стоимость:
               <input
-                type="number"
-                name="cost"
+                type='number'
+                name='cost'
                 value={formData.cost || 0}
                 onChange={handleNumberInputChange}
               />
             </label>
           </div>
         )}
-
         <input
-          type="file"
-          className="custom-file-input"
+          type='file'
+          className='custom-file-input'
           multiple
-          accept="image/*, .pdf, .doc, .docx"
+          accept='image/*, .pdf, .doc, .docx'
           onChange={handleFileChange}
         />
-
-        <button type="submit">Сохранить</button>
+        <button type='submit'>Сохранить</button>
       </form>
-
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   )
