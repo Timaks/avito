@@ -169,11 +169,16 @@ input[type='submit']:hover {
   padding: 10px 15px;
   border-radius: 4px;
 }
+.item-buttons .item-buttons-del {
+  background-color: #ff002d;
+}
 
 .item-buttons .button:hover {
   background-color: #008acf;
 }
-
+.item-buttons .item-buttons-del:hover {
+  background-color: #d10228;
+}
 /* Контейнер для главного контента – фильтры и список */
 .main-content {
   display: flex;

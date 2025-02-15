@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import axios, { AxiosError } from 'axios'
 import { ListPageTypes } from '../App'
 
-function ItemPage() {
+interface ItemPageProps {
+  deleteItem: (id: number) => void
+}
+
+function ItemPage({ deleteItem }: ItemPageProps) {
   const { id } = useParams<{ id: string }>()
   const [item, setItem] = useState<ListPageTypes | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -32,6 +37,20 @@ function ItemPage() {
 
     fetchItem()
   }, [id])
+
+  const handleDelete = async () => {
+    if (window.confirm('Вы действительно хотите удалить это объявление?')) {
+      try {
+        await axios.delete(`http://localhost:3000/items/${id}`)
+        // Обновляем глобальное состояние
+        deleteItem(Number(id))
+        navigate('/')
+      } catch (err) {
+        console.error(err)
+        setError('Ошибка при удалении объявления')
+      }
+    }
+  }
 
   if (loading)
     return (
@@ -132,6 +151,11 @@ function ItemPage() {
             <Link to={`/form/${item.id}`} className='button'>
               Редактировать
             </Link>
+            <button onClick={handleDelete} className='button item-buttons-del'>
+              Удалить
+            </button>
+          </div>
+          <div className='item-buttons'>
             <Link to='/' className='button'>
               Вернуться к списку объявлений
             </Link>

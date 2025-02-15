@@ -80,6 +80,11 @@ function App() {
     )
   }
 
+  // Функция для удаления объявления
+  const deleteItem = (id: number) => {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== id))
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -87,13 +92,15 @@ function App() {
           path='/'
           element={<ListPage items={items} loading={loading} error={error} />}
         />
-        {/* Передаём updateItem в форму редактирования */}
         <Route
           path='/form/:id'
           element={<FormPage addItem={addItem} updateItem={updateItem} />}
         />
         <Route path='/form' element={<FormPage addItem={addItem} />} />
-        <Route path='/item/:id' element={<ItemPage />} />
+        <Route
+          path='/item/:id'
+          element={<ItemPage deleteItem={deleteItem} />}
+        />
         <Route path='*' element={<NotFound />} />
       </Routes>
     </BrowserRouter>
