@@ -24,10 +24,11 @@ interface FeedbackFormData {
 
 interface FormPageProps {
   addItem: (newItem: ListPageTypes) => void
+  updateItem?: (updatedItem: ListPageTypes) => void
 }
 
-const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
-  // Если в URL есть параметр id, значит мы редактируем существующее объявление
+const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
+   // Если в URL есть параметр id, значит мы редактируем существующее объявление
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
 
@@ -47,7 +48,7 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
         .get<ListPageTypes>(`http://localhost:3000/items/${id}`)
         .then((response) => {
           const item = response.data
-          // Преобразуем серверный тип в формат формы:
+          // Преобразуем серверный тип в формат для формы:
           // 'Недвижимость' -> 'realty', 'Авто' -> 'auto', 'Услуги' -> 'services'
           let formType: '' | 'realty' | 'auto' | 'services' = ''
           switch (item.type) {
@@ -87,7 +88,7 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
           setError('Не удалось загрузить данные объявления для редактирования.')
         })
     } else {
-      // Для нового объявления можно использовать localStorage (если нужно)
+      // Если создаём новое объявление, можно загрузить данные из localStorage (если есть)
       const savedData = localStorage.getItem('draftFormData')
       if (savedData) {
         setFormData(JSON.parse(savedData))
@@ -95,7 +96,7 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
     }
   }, [id])
 
-  // Сохраняем в localStorage только для нового объявления
+  // Сохраняем данные в localStorage только для нового объявления
   useEffect(() => {
     if (!id) {
       localStorage.setItem('draftFormData', JSON.stringify(formData))
@@ -158,7 +159,7 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
       return
     }
 
-    // Дополнительные проверки по типу объявления
+    // Дополнительные проверки для каждой категории
     if (
       serverType === 'Недвижимость' &&
       (!formData.propertyType ||
@@ -169,7 +170,6 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
       setError('Не все обязательные поля для недвижимости заполнены.')
       return
     }
-
     if (
       serverType === 'Авто' &&
       (!formData.brand ||
@@ -180,7 +180,6 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
       setError('Не все обязательные поля для авто заполнены.')
       return
     }
-
     if (
       serverType === 'Услуги' &&
       (!formData.serviceType || !formData.experience || !formData.cost)
@@ -189,17 +188,24 @@ const FormPage: React.FC<FormPageProps> = ({ addItem }) => {
       return
     }
 
-    // Формируем данные для отправки на сервер
+    // Формируем данные для отправки
     const dataToSubmit = { ...formData, type: serverType }
 
     try {
       if (id) {
-        // Режим редактирования – обновляем существующее объявление
-        await axios.put(`http://localhost:3000/items/${id}`, dataToSubmit)
-        // После обновления можно перейти на страницу просмотра объявления
+        // Режим редактирования – обновляем объявление
+        const response = await axios.put(
+          `http://localhost:3000/items/${id}`,
+          dataToSubmit
+        )
+        // Если функция updateItem передана, обновляем глобальное состояние
+        if (updateItem) {
+          updateItem(response.data)
+        }
+        // Переходим на страницу просмотра объявления
         navigate(`/item/${id}`)
       } else {
-        // Режим создания – добавляем новое объявление
+        // Режим создания – создаём новое объявление
         const response = await axios.post(
           'http://localhost:3000/items',
           dataToSubmit

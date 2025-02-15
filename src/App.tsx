@@ -1,14 +1,14 @@
+// App.tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import axios, { AxiosError } from 'axios'
 
 import FormPage from './pages/FormPage'
 import ListPage from './pages/ListPage'
-import ItemPage from './pages/ItemPage' // Импортируем компонент для отдельного объявления
+import ItemPage from './pages/ItemPage'
 import NotFound from './pages/NotFound'
 import './index.css'
 
-// Интерфейс, соответствующий данным, возвращаемым сервером
 export interface ListPageTypes {
   id: number
   name: string
@@ -68,9 +68,16 @@ function App() {
     }
   }
 
+  // Функция для добавления нового объявления
   const addItem = (newItem: ListPageTypes) => {
-    // Добавляем новое объявление в конец массива
     setItems((prevItems) => [...prevItems, newItem])
+  }
+
+  // Функция для обновления объявления
+  const updateItem = (updatedItem: ListPageTypes) => {
+    setItems((prevItems) =>
+      prevItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+    )
   }
 
   return (
@@ -80,10 +87,13 @@ function App() {
           path='/'
           element={<ListPage items={items} loading={loading} error={error} />}
         />
-        <Route path='/form/:id' element={<FormPage addItem={addItem} />} />
+        {/* Передаём updateItem в форму редактирования */}
+        <Route
+          path='/form/:id'
+          element={<FormPage addItem={addItem} updateItem={updateItem} />}
+        />
         <Route path='/form' element={<FormPage addItem={addItem} />} />
-        <Route path='/item/:id' element={<ItemPage />} />{' '}
-        {/* Добавили маршрут для отдельного объявления */}
+        <Route path='/item/:id' element={<ItemPage />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
     </BrowserRouter>
