@@ -27,6 +27,8 @@ interface FiltersProps {
   setServiceTypeFilter: (value: string) => void
   minCostFilter: string
   setMinCostFilter: (value: string) => void
+  // Функция сброса фильтров
+  clearFilters: () => void
 }
 
 const Filters: React.FC<FiltersProps> = ({
@@ -52,6 +54,7 @@ const Filters: React.FC<FiltersProps> = ({
   setServiceTypeFilter,
   minCostFilter,
   setMinCostFilter,
+  clearFilters,
 }) => {
   return (
     <div className='filters'>
@@ -74,6 +77,7 @@ const Filters: React.FC<FiltersProps> = ({
             Тип недвижимости:
             <input
               type='text'
+              placeholder='Квартира, дом и т.д.'
               value={propertyTypeFilter}
               onChange={(e) => setPropertyTypeFilter(e.target.value)}
             />
@@ -82,6 +86,7 @@ const Filters: React.FC<FiltersProps> = ({
             Мин. площадь (кв.м):
             <input
               type='number'
+              placeholder='Например, 50'
               value={minAreaFilter}
               onChange={(e) => setMinAreaFilter(e.target.value)}
             />
@@ -90,6 +95,7 @@ const Filters: React.FC<FiltersProps> = ({
             Мин. кол-во комнат:
             <input
               type='number'
+              placeholder='Например, 2'
               value={minRoomsFilter}
               onChange={(e) => setMinRoomsFilter(e.target.value)}
             />
@@ -98,6 +104,7 @@ const Filters: React.FC<FiltersProps> = ({
             Макс. цена (руб.):
             <input
               type='number'
+              placeholder='Например, 5000000'
               value={maxPriceFilter}
               onChange={(e) => setMaxPriceFilter(e.target.value)}
             />
@@ -111,6 +118,7 @@ const Filters: React.FC<FiltersProps> = ({
             Марка:
             <input
               type='text'
+              placeholder='Например, Toyota'
               value={brandFilter}
               onChange={(e) => setBrandFilter(e.target.value)}
             />
@@ -119,6 +127,7 @@ const Filters: React.FC<FiltersProps> = ({
             Модель:
             <input
               type='text'
+              placeholder='Например, Camry'
               value={modelFilter}
               onChange={(e) => setModelFilter(e.target.value)}
             />
@@ -127,6 +136,7 @@ const Filters: React.FC<FiltersProps> = ({
             Мин. год:
             <input
               type='number'
+              placeholder='Например, 2010'
               value={minYearFilter}
               onChange={(e) => setMinYearFilter(e.target.value)}
             />
@@ -135,6 +145,7 @@ const Filters: React.FC<FiltersProps> = ({
             Макс. пробег (км):
             <input
               type='number'
+              placeholder='Например, 200000'
               value={maxMileageFilter}
               onChange={(e) => setMaxMileageFilter(e.target.value)}
             />
@@ -148,6 +159,7 @@ const Filters: React.FC<FiltersProps> = ({
             Тип услуги:
             <input
               type='text'
+              placeholder='Например, продажа'
               value={serviceTypeFilter}
               onChange={(e) => setServiceTypeFilter(e.target.value)}
             />
@@ -156,12 +168,17 @@ const Filters: React.FC<FiltersProps> = ({
             Мин. стоимость (руб.):
             <input
               type='number'
+              placeholder='Например, 500'
               value={minCostFilter}
               onChange={(e) => setMinCostFilter(e.target.value)}
             />
           </label>
         </div>
       )}
+
+      <button className='button clear-filters' onClick={clearFilters}>
+        Очистить фильтры
+      </button>
     </div>
   )
 }

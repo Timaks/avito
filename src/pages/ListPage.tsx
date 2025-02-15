@@ -27,6 +27,21 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
   const [serviceTypeFilter, setServiceTypeFilter] = useState('')
   const [minCostFilter, setMinCostFilter] = useState('')
 
+  // Функция сброса фильтров
+  const clearFilters = () => {
+    setSelectedCategory('')
+    setPropertyTypeFilter('')
+    setMinAreaFilter('')
+    setMinRoomsFilter('')
+    setMaxPriceFilter('')
+    setBrandFilter('')
+    setModelFilter('')
+    setMinYearFilter('')
+    setMaxMileageFilter('')
+    setServiceTypeFilter('')
+    setMinCostFilter('')
+  }
+
   // Сбрасываем текущую страницу при изменении фильтров
   useEffect(() => {
     setCurrentPage(0)
@@ -47,13 +62,9 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
   // Фильтрация элементов
   const filteredItems = items.filter((item) => {
     let match = true
-
-    // Фильтр по категории
     if (selectedCategory && item.type !== selectedCategory) {
       match = false
     }
-
-    // Дополнительные фильтры для "Недвижимость"
     if (selectedCategory === 'Недвижимость') {
       if (
         propertyTypeFilter &&
@@ -86,8 +97,6 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         match = false
       }
     }
-
-    // Дополнительные фильтры для "Авто"
     if (selectedCategory === 'Авто') {
       if (
         brandFilter &&
@@ -118,8 +127,6 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         match = false
       }
     }
-
-    // Дополнительные фильтры для "Услуги"
     if (selectedCategory === 'Услуги') {
       if (
         serviceTypeFilter &&
@@ -138,7 +145,6 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         match = false
       }
     }
-
     return match
   })
 
@@ -160,67 +166,71 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
         </Link>
       </div>
 
-      {/* Компонент фильтров */}
-      <Filters
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        propertyTypeFilter={propertyTypeFilter}
-        setPropertyTypeFilter={setPropertyTypeFilter}
-        minAreaFilter={minAreaFilter}
-        setMinAreaFilter={setMinAreaFilter}
-        minRoomsFilter={minRoomsFilter}
-        setMinRoomsFilter={setMinRoomsFilter}
-        maxPriceFilter={maxPriceFilter}
-        setMaxPriceFilter={setMaxPriceFilter}
-        brandFilter={brandFilter}
-        setBrandFilter={setBrandFilter}
-        modelFilter={modelFilter}
-        setModelFilter={setModelFilter}
-        minYearFilter={minYearFilter}
-        setMinYearFilter={setMinYearFilter}
-        maxMileageFilter={maxMileageFilter}
-        setMaxMileageFilter={setMaxMileageFilter}
-        serviceTypeFilter={serviceTypeFilter}
-        setServiceTypeFilter={setServiceTypeFilter}
-        minCostFilter={minCostFilter}
-        setMinCostFilter={setMinCostFilter}
-      />
+      <div className='main-content'>
+        <div className='sidebar'>
+          <Filters
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            propertyTypeFilter={propertyTypeFilter}
+            setPropertyTypeFilter={setPropertyTypeFilter}
+            minAreaFilter={minAreaFilter}
+            setMinAreaFilter={setMinAreaFilter}
+            minRoomsFilter={minRoomsFilter}
+            setMinRoomsFilter={setMinRoomsFilter}
+            maxPriceFilter={maxPriceFilter}
+            setMaxPriceFilter={setMaxPriceFilter}
+            brandFilter={brandFilter}
+            setBrandFilter={setBrandFilter}
+            modelFilter={modelFilter}
+            setModelFilter={setModelFilter}
+            minYearFilter={minYearFilter}
+            setMinYearFilter={setMinYearFilter}
+            maxMileageFilter={maxMileageFilter}
+            setMaxMileageFilter={setMaxMileageFilter}
+            serviceTypeFilter={serviceTypeFilter}
+            setServiceTypeFilter={setServiceTypeFilter}
+            minCostFilter={minCostFilter}
+            setMinCostFilter={setMinCostFilter}
+            clearFilters={clearFilters}
+          />
+        </div>
+        <div className='list-container'>
+          {loading && <p>Загрузка...</p>}
+          {error && <p style={{ color: 'red' }}>{error}</p>}
+          {filteredItems.length === 0 && !loading && !error && (
+            <p>Пока нет объявлений.</p>
+          )}
+          <ul>
+            {currentItems.map((item) => (
+              <li key={item.id} className='list-item'>
+                <div className='item-preview'>
+                  <img
+                    src={
+                      item.image
+                        ? item.image
+                        : 'https://azaliadecor.ru/upload/iblock/5c7/pya5k5qetqhcd2lm4finiaulj4hjv7pq.jpg'
+                    }
+                    alt={item.name}
+                    className='item-image'
+                  />
+                  <div className='item-info'>
+                    <h2>{item.name}</h2>
+                    <p>Локация: {item.location}</p>
+                    <p>Категория: {item.type}</p>
+                  </div>
+                  <Link to={`/item/${item.id}`} className='button'>
+                    Открыть
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
 
-      {loading && <p>Загрузка...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {filteredItems.length === 0 && !loading && !error && (
-        <p>Пока нет объявлений.</p>
-      )}
-
-      <ul>
-        {currentItems.map((item) => (
-          <li key={item.id} className='list-item'>
-            <div className='item-preview'>
-              <img
-                src={
-                  item.image
-                    ? item.image
-                    : 'https://azaliadecor.ru/upload/iblock/5c7/pya5k5qetqhcd2lm4finiaulj4hjv7pq.jpg'
-                }
-                alt={item.name}
-                className='item-image'
-              />
-              <div className='item-info'>
-                <h2>{item.name}</h2>
-                <p>Локация: {item.location}</p>
-                <p>Категория: {item.type}</p>
-              </div>
-              <Link to={`/item/${item.id}`} className='button'>
-                Открыть
-              </Link>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      {filteredItems.length > itemsPerPage && (
-        <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
-      )}
+          {filteredItems.length > itemsPerPage && (
+            <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
+          )}
+        </div>
+      </div>
     </div>
   )
 }
