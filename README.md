@@ -1,50 +1,46 @@
-# React + TypeScript + Vite
+Avito Clone
+Это проект для управления объявлениями, разработанный на React с использованием TypeScript, Redux Toolkit и Vite. Проект включает клиентскую часть и серверную часть для работы с API.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Технологии
+React с TypeScript
+Redux Toolkit для управления состоянием
+Vite для сборки и разработки
+Axios для HTTP-запросов
+React Router Dom для маршрутизации
+Установка и запуск
+Клиентская часть
+Установка зависимостей:
+npm install
+Запуск в режиме разработки:
+npm run dev
+После этого приложение будет доступно по адресу, указанному в терминале (обычно http://localhost:5173).
 
-Currently, two official plugins are available:
+Сборка проекта для продакшена:
+npm run build
+Предварительный просмотр собранной версии:
+npm run preview
+Серверная часть
+Этот проект использует отдельный сервер для управления объявлениями (API).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Установка зависимостей сервера:
 
-## Expanding the ESLint configuration
+Перейдите в папку сервера (если она отделена) и выполните:
+npm install
+npm start
+Сервер будет запущен на порту 3000 или на порту, указанном в переменной окружения PORT.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Примечание: Сервер и клиент запускаются в отдельных терминальных окнах.
 
-- Configure the top-level `parserOptions` property like this:
+Структура проекта
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+Прерывание запросов
+Для отмены запросов при переходе между страницами используется механизм AbortController в thunk‑функциях и в компонентах. Например, в компоненте ListPage и FormPage запросы отменяются при размонтировании компонента. (откатилась возникли сложности)
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Скрипты package.json
+npm run dev – запуск приложения в режиме разработки.
+npm run build – сборка приложения для продакшена.
+npm run preview – предварительный просмотр собранной версии.
+npm start – запуск серверной части (API).
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+Заключение
+Этот проект демонстрирует использование современных технологий для создания приложения с управлением объявлениями.
