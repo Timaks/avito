@@ -1,14 +1,12 @@
-// App.tsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import axios, { AxiosError } from 'axios'
-
 import FormPage from './pages/FormPage'
 import ListPage from './pages/ListPage'
 import ItemPage from './pages/ItemPage'
 import NotFound from './pages/NotFound'
 import './index.css'
 
+// Интерфейс для типизации данных объявления.
+//  вынести в отдельный файл (types.ts).
 export interface ListPageTypes {
   id: number
   name: string
@@ -33,74 +31,13 @@ export interface ListPageTypes {
 }
 
 function App() {
-  const [items, setItems] = useState<ListPageTypes[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
-
-  useEffect(() => {
-    fetchItems()
-  }, [])
-
-  const fetchItems = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await axios.get<ListPageTypes[]>(
-        'http://localhost:3000/items'
-      )
-      setItems(response.data)
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        if (err.response) {
-          setError(
-            `Ошибка загрузки: ${err.response.status} ${err.response.statusText}`
-          )
-        } else {
-          setError(
-            'Не удалось загрузить объявления. Проверьте ваше подключение или сервер.'
-          )
-        }
-      } else {
-        setError('Произошла неизвестная ошибка.')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Функция для добавления нового объявления
-  const addItem = (newItem: ListPageTypes) => {
-    setItems((prevItems) => [...prevItems, newItem])
-  }
-
-  // Функция для обновления объявления
-  const updateItem = (updatedItem: ListPageTypes) => {
-    setItems((prevItems) =>
-      prevItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
-    )
-  }
-
-  // Функция для удаления объявления
-  const deleteItem = (id: number) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== id))
-  }
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path='/'
-          element={<ListPage items={items} loading={loading} error={error} />}
-        />
-        <Route
-          path='/form/:id'
-          element={<FormPage addItem={addItem} updateItem={updateItem} />}
-        />
-        <Route path='/form' element={<FormPage addItem={addItem} />} />
-        <Route
-          path='/item/:id'
-          element={<ItemPage deleteItem={deleteItem} />}
-        />
+        <Route path='/' element={<ListPage />} />
+        <Route path='/form/:id' element={<FormPage />} />
+        <Route path='/form' element={<FormPage />} />
+        <Route path='/item/:id' element={<ItemPage />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
     </BrowserRouter>

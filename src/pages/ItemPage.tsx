@@ -1,54 +1,43 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import axios, { AxiosError } from 'axios'
-import { ListPageTypes } from '../App'
+import { useAppDispatch, useAppSelector } from '../redux/hooks/hooks'
+import {
+  fetchItem,
+  deleteItemThunk,
+  clearItem,
+} from '../redux/slices/currentItemSlice'
 
-interface ItemPageProps {
-  deleteItem: (id: number) => void
-}
-
-function ItemPage({ deleteItem }: ItemPageProps) {
+const ItemPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-  const [item, setItem] = useState<ListPageTypes | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string | null>(null)
+  const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const fetchItem = async () => {
-      setLoading(true)
-      try {
-        const response = await axios.get<ListPageTypes>(
-          `http://localhost:3000/items/${id}`
-        )
-        setItem(response.data)
-      } catch (err) {
-        if (err instanceof AxiosError && err.response) {
-          setError(
-            `Ошибка загрузки: ${err.response.status} ${err.response.statusText}`
-          )
-        } else {
-          setError('Произошла неизвестная ошибка.')
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
+  const { item, loading, error } = useAppSelector((state) => state.currentItem)
 
-    fetchItem()
-  }, [id])
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchItem(id))
+    }
+    // Очистим состояние при размонтировании компонента
+    return () => {
+      dispatch(clearItem())
+    }
+  }, [dispatch, id])
 
   const handleDelete = async () => {
-    if (window.confirm('Вы действительно хотите удалить это объявление?')) {
-      try {
-        await axios.delete(`http://localhost:3000/items/${id}`)
-        // Обновляем глобальное состояние
-        deleteItem(Number(id))
-        navigate('/')
-      } catch (err) {
-        console.error(err)
-        setError('Ошибка при удалении объявления')
-      }
+    if (
+      window.confirm('Вы действительно хотите удалить это объявление?') &&
+      id
+    ) {
+      dispatch(deleteItemThunk(id))
+        .unwrap()
+        .then(() => {
+          // Можно также обновить список объявлений, если потребуется
+          navigate('/')
+        })
+        .catch((err) => {
+          console.error(err)
+        })
     }
   }
 

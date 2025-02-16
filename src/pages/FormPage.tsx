@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ListPageTypes } from '../App'
+import { useAppDispatch, useAppSelector } from '../redux/hooks/hooks'
 import { FormFields } from '../components/FormFields'
+import {
+  fetchItem as fetchItemThunk,
+  clearItem,
+} from '../redux/slices/currentItemSlice'
+import { createItem, updateItemThunk } from '../redux/slices/itemsSlice'
 
 export interface FeedbackFormData {
   name: string
@@ -23,16 +27,15 @@ export interface FeedbackFormData {
   cost?: number
 }
 
-interface FormPageProps {
-  addItem: (newItem: ListPageTypes) => void
-  updateItem?: (updatedItem: ListPageTypes) => void
-}
-
 const DRAFT_KEY = 'draftFormData'
 
-const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
+const FormPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+
+  // Если редактируем, получаем объявление из Redux
+  const currentItem = useAppSelector((state) => state.currentItem.item)
 
   const defaultState: FeedbackFormData = {
     name: '',
@@ -62,46 +65,49 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
   })
   const [error, setError] = useState<string | null>(null)
 
+  // При редактировании – получаем данные объявления через Redux
   useEffect(() => {
     if (id) {
-      axios
-        .get<ListPageTypes>(`http://localhost:3000/items/${id}`)
-        .then((response) => {
-          const item = response.data
-          const formType: '' | 'realty' | 'auto' | 'services' =
-            item.type === 'Недвижимость'
-              ? 'realty'
-              : item.type === 'Авто'
-              ? 'auto'
-              : item.type === 'Услуги'
-              ? 'services'
-              : ''
-          setFormData({
-            name: item.name,
-            description: item.description,
-            location: item.location,
-            type: formType,
-            image: item.image || '',
-            propertyType: item.propertyType || '',
-            area: item.area || 0,
-            rooms: item.rooms || 0,
-            price: item.price || 0,
-            brand: item.brand || '',
-            model: item.model || '',
-            year: item.year || 0,
-            mileage: item.mileage || 0,
-            serviceType: item.serviceType || '',
-            experience: item.experience || '',
-            cost: item.cost || 0,
-          })
-        })
-        .catch((err) => {
-          console.error(err)
-          setError('Не удалось загрузить данные объявления для редактирования.')
-        })
+      dispatch(fetchItemThunk(id))
     }
-  }, [id])
+    return () => {
+      dispatch(clearItem())
+    }
+  }, [id, dispatch])
 
+  // Когда данные из Redux загрузятся, заполняем форму
+  useEffect(() => {
+    if (id && currentItem) {
+      const formType: '' | 'realty' | 'auto' | 'services' =
+        currentItem.type === 'Недвижимость'
+          ? 'realty'
+          : currentItem.type === 'Авто'
+          ? 'auto'
+          : currentItem.type === 'Услуги'
+          ? 'services'
+          : ''
+      setFormData({
+        name: currentItem.name,
+        description: currentItem.description,
+        location: currentItem.location,
+        type: formType,
+        image: currentItem.image || '',
+        propertyType: currentItem.propertyType || '',
+        area: currentItem.area || 0,
+        rooms: currentItem.rooms || 0,
+        price: currentItem.price || 0,
+        brand: currentItem.brand || '',
+        model: currentItem.model || '',
+        year: currentItem.year || 0,
+        mileage: currentItem.mileage || 0,
+        serviceType: currentItem.serviceType || '',
+        experience: currentItem.experience || '',
+        cost: currentItem.cost || 0,
+      })
+    }
+  }, [id, currentItem])
+
+  // Сохраняем черновик в localStorage, если создаём новое объявление
   useEffect(() => {
     if (!id) {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(formData))
@@ -189,38 +195,28 @@ const FormPage: React.FC<FormPageProps> = ({ addItem, updateItem }) => {
 
     try {
       if (id) {
-        const response = await axios.put(
-          `http://localhost:3000/items/${id}`,
-          dataToSubmit
+        // Обновляем существующее объявление
+        const resultAction = await dispatch(
+          updateItemThunk({ id: Number(id), ...dataToSubmit })
         )
-        if (updateItem) updateItem(response.data)
-        navigate(`/item/${id}`)
+        if (updateItemThunk.fulfilled.match(resultAction)) {
+          navigate(`/item/${id}`)
+        } else {
+          setError('Ошибка при обновлении объявления.')
+        }
       } else {
-        const response = await axios.post(
-          'http://localhost:3000/items',
-          dataToSubmit
-        )
-        addItem(response.data)
-        localStorage.removeItem(DRAFT_KEY)
-        navigate('/')
+        // Создаём новое объявление
+        const resultAction = await dispatch(createItem(dataToSubmit))
+        if (createItem.fulfilled.match(resultAction)) {
+          localStorage.removeItem(DRAFT_KEY)
+          navigate('/')
+        } else {
+          setError('Ошибка при создании объявления.')
+        }
       }
     } catch (error) {
       console.error('Ошибка:', error)
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          setError(
-            `Ошибка загрузки: ${error.response.status} - ${error.response.statusText}`
-          )
-        } else if (error.request) {
-          setError(
-            'Не удалось получить ответ от сервера. Проверьте ваше подключение.'
-          )
-        } else {
-          setError(`Ошибка: ${error.message}`)
-        }
-      } else {
-        setError('Произошла неизвестная ошибка.')
-      }
+      setError('Произошла неизвестная ошибка.')
     }
   }
 

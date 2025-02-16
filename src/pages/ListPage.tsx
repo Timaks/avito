@@ -2,19 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Pagination from '../components/Pagination/Pagination'
 import Filters from '../components/Filters/Filters'
+import { useAppDispatch, useAppSelector } from './../redux/hooks/hooks'
+import { fetchItems } from '../redux/slices/itemsSlice'
 import { ListPageTypes } from '../App'
 
-interface ListPageProps {
-  items: ListPageTypes[]
-  loading: boolean
-  error: string | null
-}
+const ListPage: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const { items, loading, error } = useAppSelector((state) => state.items)
 
-const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
   const itemsPerPage = 5
   const [currentPage, setCurrentPage] = useState(0)
 
-  // Состояния фильтров
+  // Локальное состояние фильтров
   const [selectedCategory, setSelectedCategory] = useState('')
   const [propertyTypeFilter, setPropertyTypeFilter] = useState('')
   const [minAreaFilter, setMinAreaFilter] = useState('')
@@ -62,6 +61,11 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
     minCostFilter,
     searchQuery,
   ])
+
+  // Загружаем объявления при монтировании компонента
+  useEffect(() => {
+    dispatch(fetchItems())
+  }, [dispatch])
 
   // Фильтрация элементов
   const filteredItems = items.filter((item) => {
@@ -227,7 +231,7 @@ const ListPage: React.FC<ListPageProps> = ({ items, loading, error }) => {
             <p>Пока нет объявлений.</p>
           )}
           <ul>
-            {currentItems.map((item) => (
+            {currentItems.map((item: ListPageTypes) => (
               <li key={item.id} className='list-item'>
                 <div className='item-preview'>
                   <img
